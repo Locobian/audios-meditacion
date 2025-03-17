@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meditación</title>
-  <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      background-image: url('https://images.unsplash.com/photo-1501973801540-537f08ccae7e');
-      background-size: cover;
-      background-position: center;
-      font-family: Arial, sans-serif;
-      color: #ffffff;
-      text-shadow: 1px 1px 2px #000000;
-    }
-    .timer {
-      font-size: 5em;
-      margin-bottom: 20px;
-    }
-    button, input {
-      font-size: 1.2em;
-      padding: 8px;
-      margin-top: 5px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meditación</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background-image: url('https://images.unsplash.com/photo-1501973801540-537f08ccae7e');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px #000000;
+        }
+        .timer {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+        button, input {
+            font-size: 1.2em;
+            padding: 8px;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
 
@@ -39,25 +39,26 @@
 <button id="stopButton">Detener</button>
 
 <!-- Archivos de audio correctamente declarados -->
-<audio id="bellFinal" src="campana-final.mp3"></audio>
-<audio id="bellIntermedia" src="campana-intermedia.mp3"></audio>
+<audio id="bellFinal" src="https://locobian.github.io/audios-meditacion/campana-final.mp3"></audio>
+<audio id="bellIntermedia" src="https://locobian.github.io/audios-meditacion/campana-intermedia.mp3"></audio>
 <audio id="silentAudio" src="https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3"></audio>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     let countdown;
+    let nextBell;
+
     const timerDisplay = document.getElementById('timer');
     const minutesInput = document.getElementById('minutesInput');
     const bellToggle = document.getElementById('bellToggle');
     const startButton = document.getElementById('startButton');
     const stopButton = document.getElementById('stopButton');
-
     const bellFinal = document.getElementById('bellFinal');
     const bellIntermedia = document.getElementById('bellIntermedia');
-    const silentAudio = new Audio("https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3");
+    const silentAudio = document.getElementById('silentAudio');
 
     startButton.onclick = () => {
-        silentAudio.play().catch(()=>{});
+        silentAudio.play().catch(() => {});
         startTimer();
     };
     stopButton.onclick = stopTimer;
@@ -66,8 +67,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'Enter') startButton.click();
     });
 
-    let countdown;
-
     function startTimer() {
         clearInterval(countdown);
         const minutes = parseInt(minutesInput.value);
@@ -75,6 +74,8 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Ingresa un valor válido (1-1439 minutos)");
             return;
         }
+
+        silentAudio.play().catch(()=>{}); // Activar permisos inmediatamente
 
         const bellActive = bellToggle.checked;
         const endTime = Date.now() + minutes * 60000;
@@ -89,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            const elapsedSeconds = minutes * 60 - secondsLeft;
+            const elapsedSeconds = (minutes * 60) - secondsLeft;
 
             if (bellActive && elapsedSeconds === nextBell) {
                 playBell(false);
@@ -102,8 +103,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             timerDisplay.textContent =
                 `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-
         }, 1000);
+
+        nextBell = 300; 
     }
 
     function stopTimer() {
@@ -111,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function playBell(isEnd = false) {
-        const bell = document.getElementById(isEnd ? 'bellFinal' : 'bellIntermedia');
+        const bell = isEnd ? bellFinal : bellIntermedia;
         if (isEnd) {
             let count = 0;
             bell.play();
@@ -122,13 +124,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (count === 2) clearInterval(interval);
             }, 2000);
         } else {
+            bell.currentTime = 0;
             bell.play();
         }
     }
 
-    // Audio silencioso para activar los permisos
-    const silentAudio = new Audio("https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3");
-
+    minutesInput.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') startButton.click();
+    });
 });
 </script>
 
