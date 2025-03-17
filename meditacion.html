@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meditación</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background-image: url('https://images.unsplash.com/photo-1501973801540-537f08ccae7e');
+      background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
+      color: #ffffff;
+      text-shadow: 1px 1px 2px #000000;
+    }
+    .timer {
+      font-size: 5em;
+      margin-bottom: 20px;
+    }
+    button, input {
+      font-size: 1.2em;
+      padding: 8px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="timer" id="timer">00:00:00</div>
+<input type="number" id="minutesInput" placeholder="Minutos (1-1439)" min="1" max="1439">
+<label><input type="checkbox" id="bellToggle" checked> Campanita cada 5 minutos</label>
+<button id="startButton">Iniciar Meditación</button>
+<button id="stopButton">Detener</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let countdown;
+    let nextBell = 300;
+    const timerDisplay = document.getElementById('timer');
+    const minutesInput = document.getElementById('minutesInput');
+    const bellToggle = document.getElementById('bellToggle');
+    const startButton = document.getElementById('startButton');
+    const stopButton = document.getElementById('stopButton');
+
+    // Audio silencioso inicial para habilitar permisos
+    const silentAudio = new Audio("https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3");
+
+    startButton.onclick = () => {
+        silentAudio.play().catch(()=>{});
+        startTimer();
+    };
+    stopButton.onclick = stopTimer;
+
+    minutesInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') startButton.click();
+    });
+
+    function startTimer() {
+        clearInterval(countdown);
+        const minutes = parseInt(minutesInput.value);
+        if (isNaN(minutes) || minutes < 1 || minutes > 1439) {
+            alert("Ingresa un valor válido (1-1439 minutos)");
+            return;
+        }
+
+        const bellActive = bellToggle.checked;
+        const endTime = Date.now() + minutes * 60000;
+        nextBell = 300;
+
+        countdown = setInterval(() => {
+            const secondsLeft = Math.round((endTime - Date.now()) / 1000);
+            if (secondsLeft <= 0) {
+                clearInterval(countdown);
+                timerDisplay.textContent = "00:00:00";
+                playBell(true);
+                return;
+            }
+
+            const elapsedSeconds = minutes * 60 - secondsLeft;
+
+            if (bellActive && elapsedSeconds === nextBell) {
+                playBell(false);
+                nextBell += 300;
+            }
+
+            const hours = Math.floor(secondsLeft / 3600);
+            const mins = Math.floor((secondsLeft % 3600) / 60);
+            const secs = secondsLeft % 60;
+
+            timerDisplay.textContent =
+                `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(countdown);
+    }
+
+    function playBell(isEnd = false) {
+        const bellUrl = isEnd
+            ? "https://locobian.github.io/audios-meditacion/campana-final.mp3"
+            : "https://locobian.github.io/audios-meditacion/campana-intermedia.mp3";
+
+        const bell = new Audio(bellUrl);
+
+        if (isEnd) {
+            let count = 0;
+            bell.play();
+            const interval = setInterval(() => {
+                bell.currentTime = 0;
+                bell.play();
+                count++;
+                if (count === 2) clearInterval(interval);
+            }, 2000);
+        } else {
+            bell.play();
+        }
+    }
+});
+</script>
+
+</body>
+</html>
