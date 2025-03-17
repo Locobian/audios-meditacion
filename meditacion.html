@@ -38,7 +38,7 @@
 <button id="startButton">Iniciar Meditación</button>
 <button id="stopButton">Detener</button>
 
-<!-- Carga previa de audios -->
+<!-- Archivos de audio correctamente declarados -->
 <audio id="bellFinal" src="campana-final.mp3"></audio>
 <audio id="bellIntermedia" src="campana-intermedia.mp3"></audio>
 <audio id="silentAudio" src="https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3"></audio>
@@ -46,7 +46,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     let countdown;
-    let nextBell = 300;
     const timerDisplay = document.getElementById('timer');
     const minutesInput = document.getElementById('minutesInput');
     const bellToggle = document.getElementById('bellToggle');
@@ -55,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const bellFinal = document.getElementById('bellFinal');
     const bellIntermedia = document.getElementById('bellIntermedia');
-    const silentAudio = document.getElementById('silentAudio');
+    const silentAudio = new Audio("https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3");
 
     startButton.onclick = () => {
         silentAudio.play().catch(()=>{});
@@ -67,6 +66,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'Enter') startButton.click();
     });
 
+    let countdown;
+
     function startTimer() {
         clearInterval(countdown);
         const minutes = parseInt(minutesInput.value);
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const bellActive = bellToggle.checked;
         const endTime = Date.now() + minutes * 60000;
-        nextBell = 300;
+        let nextBell = 300;
 
         countdown = setInterval(() => {
             const secondsLeft = Math.round((endTime - Date.now()) / 1000);
@@ -110,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function playBell(isEnd = false) {
-        const bell = isEnd ? bellFinal : bellIntermedia;
+        const bell = document.getElementById(isEnd ? 'bellFinal' : 'bellIntermedia');
         if (isEnd) {
             let count = 0;
             bell.play();
@@ -121,10 +122,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (count === 2) clearInterval(interval);
             }, 2000);
         } else {
-            bell.currentTime = 0;
             bell.play();
         }
     }
+
+    // Audio silencioso para activar los permisos
+    const silentAudio = new Audio("https://github.com/anars/blank-audio/raw/master/1-second-of-silence.mp3");
+
 });
 </script>
 
